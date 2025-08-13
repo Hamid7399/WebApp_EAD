@@ -104,7 +104,7 @@ export default {
       const sessionId = localStorage.getItem("sessionId");
       const userId = localStorage.getItem("userId");
 
-      fetch("http://localhost:5000/api/quiz/submit", {
+      fetch("/api/quiz/submit", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

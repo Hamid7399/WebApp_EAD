@@ -1,10 +1,19 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from models import db, User, ClickstreamLog, QuizResult
 from datetime import datetime
+import os
 
-app = Flask(__name__)
+# Serve Vue build
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+FRONTEND_DIST = os.path.join(BASE_DIR, "../frontend/dist")
+
+app = Flask(
+    __name__,
+    static_folder=os.path.join(FRONTEND_DIST, "static"),
+    template_folder=FRONTEND_DIST
+)
 CORS(app)
 bcrypt = Bcrypt(app)
 
@@ -15,6 +24,15 @@ db.init_app(app)
 
 with app.app_context():
     db.create_all()
+
+# ---------------------------------
+# SERVE FRONTEND
+# ---------------------------------
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_vue(path):
+    # Always serve index.html for Vue frontend
+    return render_template("index.html")
 
 # ---------------------------------
 # SIGNUP: Create new user
@@ -42,7 +60,6 @@ def signup():
     db.session.commit()
 
     return jsonify({"message": "User registered successfully", "user_id": new_user.id}), 201
-
 
 # ---------------------------------
 # LOGIN: Verify user credentials
@@ -92,7 +109,6 @@ def log_event():
     db.session.add(new_log)
     db.session.commit()
     return jsonify({"message": "Log recorded"}), 201
-
 
 # ✅ New endpoint for quiz submission
 @app.route('/api/quiz/submit', methods=['POST'])

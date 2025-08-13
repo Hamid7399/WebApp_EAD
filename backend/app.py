@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_bcrypt import Bcrypt
 from models import db, User, ClickstreamLog, QuizResult
 from datetime import datetime
+from flask import send_from_directory
 import os
 
 # Serve Vue build
@@ -31,8 +32,10 @@ with app.app_context():
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve_vue(path):
-    # Always serve index.html for Vue frontend
-    return render_template("index.html")
+    if path != "" and os.path.exists(os.path.join(FRONTEND_DIST, path)):
+        return send_from_directory(FRONTEND_DIST, path)
+    else:
+        return send_from_directory(FRONTEND_DIST, "index.html")
 
 # ---------------------------------
 # SIGNUP: Create new user
